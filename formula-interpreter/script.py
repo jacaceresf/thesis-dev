@@ -11,6 +11,17 @@ COMPLEX_OPERATIONS = {
     'log': 'np.log'
 }
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 def add_blank_spaces_to_formula(formula: str) -> str:
     new = ''
     for index, element in enumerate(formula):
@@ -110,15 +121,27 @@ def execute_formula(formula_by_columns: list, data: pd.DataFrame) -> pd.DataFram
   Saves every formula result inside a new dataframe's column.
   '''
   new_df = data.copy()
+     
   for formula_columns in formula_by_columns:
-    formula = "I("+formula_columns+")-1"
-    result = dmatrix(formula, data)
     result_items = []
-    for item in result:
-      result_items.append(item.item())
-    
-    new_df[formula_columns.replace('np.', '')] = result_items
-
+    add_data = True
+    try:
+        formula = "I("+formula_columns+")-1"
+        result = dmatrix(formula, data, NA_action='raise')
+        for item in result:
+            result_items.append(item.item())
+    except:
+        # Ignore Patsy error.
+        add_data = False
+        
+    if add_data:
+        if "np." in formula_columns:
+            new_df[formula_columns.replace('np.', '')] = result_items
+        else:
+            new_df[formula_columns] = result_items
+    else:
+        print(f"{bcolors.WARNING}Your data has some invalid values. Script will ignore them and their possible result.{bcolors.ENDC}")
+        
   return new_df
 
 def execute(formula_input: str, data: pd.DataFrame) -> pd.DataFrame:
