@@ -5,10 +5,16 @@ import re
 import pprint
 import json
 
+# TODO: add more complex operations from numpy
 COMPLEX_OPERATIONS = {
     'cos': 'np.cos',
     'tan': 'np.tan',
-    'log': 'np.log'
+    'log': 'np.log',
+    'log10': 'np.log10',
+    'log2': 'np.log2',
+    'min': 'np.min',
+    'max': 'np.max',
+    'pi': 'np.pi'
 }
 
 class bcolors:
@@ -39,7 +45,7 @@ def clean_formula(formula: str) -> str:
     result = formula
     for operation in COMPLEX_OPERATIONS:
         if(operation in formula):
-            result = formula.replace(operation, "")
+            result = result.replace(operation, "")
     return result
 
 def get_formula_variables(formula: str):
@@ -107,10 +113,17 @@ def parse_formula(formula: str, formula_columns: dict) -> list:
                 # so we can identify it then with the regex
                 replace_regex = f'{variable}(?:[^\w\*\\\+\(\)])'
                 new_formula = re.sub(replace_regex, variables_paired[variable], new_formula)
-            elif variable in COMPLEX_OPERATIONS:
-                new_formula = new_formula.replace(variable, COMPLEX_OPERATIONS[variable])
+#             elif variable in COMPLEX_OPERATIONS:
+#                 print(f'Going to replace [{variable} for [{COMPLEX_OPERATIONS[variable]}]')
+#                 new_formula = new_formula.replace(variable, COMPLEX_OPERATIONS[variable])
+#                 print(f'GOING TO APPEND => [{new_formula}]')
         new_formula = new_formula.replace(" ", "")
-
+        
+        
+        for key, value in COMPLEX_OPERATIONS.items():
+            if key in new_formula:
+                new_formula = new_formula.replace(key, value)
+        print(f'GOING TO APPEND FORMULA => [{new_formula}]\n\n')
         result.append(new_formula)
   
   return result
